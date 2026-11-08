@@ -1,0 +1,35 @@
+% UN R155/R156, ISO/SAE 21434, TARA
+\xchapter{Rules \& Process}
+
+\begin{frame}{Why the Rules Showed Up}
+  \begin{itemize}
+    \item Before $\sim$2020, car cybersecurity was basically ``do your best'', and wildly uneven.
+    \item Jeep, Tesla, the fob thefts, and dozens more, made regulators stop asking nicely.
+    \item \textbf{UN R155} now \emph{requires} a Cybersecurity Management System across the whole lifecycle, design through decommissioning, field monitoring and patching included.
+    \item \textbf{UN R156} does the same for software updates (how OTA must be engineered).
+    \item \textbf{ISO/SAE 21434} is the engineering standard for \emph{how} to build it: a cybersecurity risk-management process across the lifecycle (threat analysis, risk assessment, verification), binding OEMs and their Tier-1/Tier-2 suppliers by contract.
+  \end{itemize}
+  \vspace{1mm}
+  {\footnotesize Phased in under UNECE WP.29: exactly which vehicles and from when depends on vehicle type and market (new types from 2022, widening since). Where it applies, type approval increasingly depends on it.}
+\end{frame}
+
+\begin{frame}{TARA in One Picture}
+  \centering
+  \begin{tikzpicture}[node distance=0.4cm, every node/.style={font=\footnotesize}]
+    \node[draw, rounded corners, fill=tumblue!15, minimum width=2.6cm, align=center] (asset) {1. Identify\\Assets};
+    \node[draw, rounded corners, fill=tumblue!15, minimum width=2.6cm, align=center, right=of asset] (threat) {2. Identify\\Threat Scenarios};
+    \node[draw, rounded corners, fill=tumblue!15, minimum width=2.6cm, align=center, right=of threat] (impact) {3. Impact \&\\Attack Feasibility};
+    \node[draw, rounded corners, fill=alertred!20, minimum width=2.6cm, align=center, right=of impact] (risk) {4. Risk Value\\\& Treatment};
+
+    \draw[-Stealth] (asset) -- (threat);
+    \draw[-Stealth] (threat) -- (impact);
+    \draw[-Stealth] (impact) -- (risk);
+  \end{tikzpicture}
+
+  \vspace{4mm}
+  \begin{block}{Worked example}
+    \textbf{Asset}: brake ECU firmware integrity. \textbf{Threat}: forged CAN frames via an infotainment pivot. \textbf{Feasibility}: medium (needs several bugs chained). \textbf{Impact}: severe (safety). \textbf{Treatment}: gateway filtering + message authentication, mandatory.
+  \end{block}
+  \vspace{1mm}
+  {\footnotesize \textbf{On your desk}: every feature ships with a TARA and verification evidence before sign-off, plus continuous vulnerability management with defined remediation timelines. Security lives in requirements and supplier contracts from day one, not a pen-test bolted on at the end.}
+\end{frame}

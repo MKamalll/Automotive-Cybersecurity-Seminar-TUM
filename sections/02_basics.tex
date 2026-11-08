@@ -1,0 +1,39 @@
+% Security basics (reuse tutorial slides), mapped to automotive
+\xchapter{Security, in a Car}
+
+\begin{frame}{The CIA Triad, Behind the Wheel}
+  \begin{itemize}
+    \item \textbf{Confidentiality} -- your location, driving habits and cabin camera stay private.
+    \item \textbf{Integrity} -- a message that says ``I'm the brake ECU'' had better \emph{be} the brake ECU.
+    \item \textbf{Availability} -- the airbag controller answers in milliseconds, every time. A DoS on a safety bus \emph{is} a safety incident.
+  \end{itemize}
+  \vspace{1mm}
+  \begin{block}{And for cars, CIA isn't enough}
+    Who authorised this OTA update? Can a supplier deny shipping bad firmware? Is this the real key, or a relay box in the bushes?
+  \end{block}
+\end{frame}
+
+\begin{frame}{Safety vs.\ Security: the One Slide That Matters}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Safety} \;(ISO 26262)
+      \begin{itemize}
+        \item Guards against \emph{bad luck}: random faults, design errors.
+        \item Assumes nobody is out to get you.
+        \item Mature in cars since the 2000s.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Security} \;(ISO/SAE 21434)
+      \begin{itemize}
+        \item Guards against \emph{bad intent}: a thinking adversary.
+        \item Assumes someone hunts the weakest link.
+        \item Only mandatory since 2022 (UN R155).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.3cm}
+  \begin{alertblock}{The key insight}
+    A car can be perfectly \emph{safe}, failing predictably, and still wide open, because the attacker picks when and how it fails. Modern cars have to do both.
+  \end{alertblock}
+\end{frame}

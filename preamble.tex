@@ -1,0 +1,57 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{listings}
+\usepackage{booktabs}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.symbols,calc}
+
+% Colours (TUM blue as accent)
+\definecolor{tumblue}{RGB}{0,101,189}
+\definecolor{tumdark}{RGB}{0,82,147}
+\definecolor{tumgrey}{RGB}{100,100,100}
+\definecolor{alertred}{RGB}{196,30,58}
+
+\usetheme{default}
+\usecolortheme[named=tumblue]{structure}
+\setbeamercolor{title}{fg=tumblue}
+\setbeamercolor{frametitle}{fg=white,bg=tumblue}
+\setbeamercolor{block title}{bg=tumblue,fg=white}
+\setbeamercolor{block body}{bg=tumblue!8}
+\setbeamercolor{alerted text}{fg=alertred}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamerfont{frametitle}{series=\bfseries,size=\Large}
+\setbeamertemplate{footline}{%
+  \hfill\insertframenumber\,/\,\inserttotalframenumber\hspace{1em}\vspace{4pt}}
+
+% Running chapter label in the title bar, so students always know where we are.
+\gdef\thechaptername{}
+\newcommand{\xchapter}[1]{\gdef\thechaptername{#1}\section{#1}}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip%
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0pt,leftskip=0.35cm,rightskip=0.35cm]{frametitle}%
+    \vskip3pt
+    {\scriptsize\mdseries\thechaptername}\\[-1pt]
+    {\usebeamerfont{frametitle}\insertframetitle}
+    \vskip3pt
+  \end{beamercolorbox}%
+}
+
+% Beamer already loads hyperref itself; just set link colours so
+% \url / \href blend in instead of showing up in hyperref's defaults.
+\hypersetup{colorlinks=true, linkcolor=tumblue, urlcolor=tumblue, citecolor=tumblue}
+
+% A small, consistent way to credit a source at the bottom of a slide.
+\newcommand{\source}[1]{{\scriptsize\color{tumgrey} Source: #1}}
+
+% (Section-divider slides intentionally removed to keep the deck tight;
+%  slide titles already signal topic changes. One manual divider is kept
+%  before the live demo.)
+
+% Code listings
+\lstset{basicstyle=\ttfamily\footnotesize,keywordstyle=\color{tumblue}\bfseries,
+  commentstyle=\color{tumgrey},frame=single,backgroundcolor=\color{gray!8},
+  language=C,breaklines=true}

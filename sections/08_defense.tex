@@ -1,0 +1,31 @@
+% Layered defense, secure boot, MAC, SBOM
+\xchapter{Defense in Depth}
+
+\begin{frame}{Defense in Depth: Layers, Not a Silver Bullet}
+  \begin{itemize}
+    \item The demo broke \emph{one} layer. Real systems stack them so no single failure is fatal.
+    \item \textbf{Code} -- safe string functions, input validation, Rust for new components.
+    \item \textbf{Compiler / OS} -- stack canaries, ASLR, NX/DEP, Control-Flow Integrity (the very things our demo switched off).
+    \item \textbf{OS security} -- Mandatory Access Control, sandboxing, secure boot (QNX, Linux).
+    \item \textbf{Network} -- gateway segmentation, CAN authentication (SecOC), isolating safety zones.
+    \item \textbf{Process} -- the ISO/SAE 21434 lifecycle and continuous vulnerability management.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Which Layer Would Have Stopped \emph{Our} Demo?}
+  \begin{itemize}
+    \item \textbf{Stack canary} -- a secret value just before the return address. Our overflow smashes it, so the program aborts \emph{before} the hijack.
+    \item \textbf{ASLR / PIE} -- shuffles addresses every run, so we could never have hardcoded where \texttt{win()} lives.
+    \item \textbf{NX / DEP} -- blocks jumping into injected shellcode (we jumped to existing code instead, which is exactly why return-oriented techniques exist).
+    \item \textbf{Bounds-checked copy} (\texttt{strlcpy}, or just checking the length) -- kills the bug at the source. \alert{Cheapest, most reliable fix of all.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The Part That Never Stops: Vuln Management}
+  \begin{itemize}
+    \item \textbf{SBOM} -- a full ingredient list of every component in an ECU's software, open-source included.
+    \item Cross-checked against CVE feeds non-stop: a new CVE in a library you ship is a hole in your car, whether you wrote that code or not.
+    \item Feeds the 21434 loop: triage $\rightarrow$ TARA $\rightarrow$ patch (often OTA) $\rightarrow$ report to the regulator.
+    \item A permanent, staffed function inside every OEM now, not a one-off audit before launch.
+  \end{itemize}
+\end{frame}
