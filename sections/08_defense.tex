@@ -1,6 +1,14 @@
 % Layered defense, secure boot, MAC, SBOM
 \xchapter{Defense in Depth}
 
+\begin{frame}[plain]
+  \vfill\centering
+  {\color{tumblue}\Huge\bfseries From Attack to Defense\par}
+  \vspace{3mm}
+  {\large\color{tumgrey} Secure design, defense in depth, and a security process that never stops}
+  \vfill
+\end{frame}
+
 \begin{frame}{Defense in Depth: No Single Wall}
   \centering
   \begin{tikzpicture}[font=\scriptsize]
@@ -36,6 +44,83 @@
     \item \textbf{NX / DEP} -- blocks jumping into injected shellcode (we jumped to existing code instead, which is exactly why return-oriented techniques exist).
     \item \textbf{Bounds-checked copy} (\texttt{strlcpy}, or just checking the length) -- kills the bug at the source. \alert{Cheapest, most reliable fix of all.}
   \end{itemize}
+\end{frame}
+
+\begin{frame}{The Security Testing Toolbox}
+  \centering
+  \begin{tikzpicture}[
+      box/.style={draw=tumdark, line width=0.6pt, rounded corners=4pt, fill=tumblue!12,
+                  minimum width=3.9cm, minimum height=0.9cm, align=center, font=\small},
+      conn/.style={tumdark, line width=0.5pt}]
+    \node[circle, fill=tumblue, text=white, minimum size=2.9cm, align=center,
+          font=\bfseries] (c) at (0,0) {Security\\Testing\\Activities};
+    % left column
+    \node[box] (n1) at (-4.5, 2.1) {\textcolor{alertred}{\textbf{1.}}~Source Code Auditing};
+    \node[box] (n2) at (-4.5, 0.7) {\textcolor{alertred}{\textbf{2.}}~SW Component Analysis};
+    \node[box] (n3) at (-4.5,-0.7) {\textcolor{alertred}{\textbf{3.}}~Vulnerability Scanning};
+    \node[box] (n4) at (-4.5,-2.1) {\textcolor{alertred}{\textbf{4.}}~Vulnerability Assessment};
+    % right column
+    \node[box] (n8) at (4.5, 2.1) {\textcolor{alertred}{\textbf{8.}}~Security Review};
+    \node[box] (n7) at (4.5, 0.7) {\textcolor{alertred}{\textbf{7.}}~Security Audit};
+    \node[box] (n6) at (4.5,-0.7) {\textcolor{alertred}{\textbf{6.}}~Red Teaming};
+    \node[box] (n5) at (4.5,-2.1) {\textcolor{alertred}{\textbf{5.}}~Penetration Testing};
+    \foreach \n in {n1,n2,n3,n4,n5,n6,n7,n8}{\draw[conn] (c) -- (\n);}
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  {\scriptsize\color{tumgrey} A full programme uses many of these. The next slides zoom into two code-level ones: \textbf{SAST} and \textbf{DAST}.}
+\end{frame}
+
+\begin{frame}{Where Each Activity Lives: the Secure SDLC}
+  \centering
+  \begin{tikzpicture}[
+      phase/.style={rounded corners=3pt, text=white, font=\scriptsize\bfseries,
+                    minimum width=1.8cm, minimum height=0.72cm, text width=1.55cm,
+                    align=center, inner sep=2pt},
+      act/.style={align=center, font=\scriptsize, text=tumdark, anchor=north, text width=1.92cm}]
+    \node[phase, fill=tumblue]     (p1) at (-5,3) {Require\-ments};
+    \node[phase, fill=tumblue!88]  (p2) at (-3,3) {Design};
+    \node[phase, fill=tumblue!76]  (p3) at (-1,3) {Develop\-ment};
+    \node[phase, fill=tumblue!64]  (p4) at (1,3)  {Testing};
+    \node[phase, fill=tumblue!52]  (p5) at (3,3)  {Deploy\-ment};
+    \node[phase, fill=alertred!80] (p6) at (5,3)  {Mainte\-nance};
+    \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6}{
+      \draw[-{Stealth[length=2mm]}, tumgrey, line width=1pt] (\a.east) -- (\b.west);}
+    \node[act] at (-5,2.35) {Security\\Strategy \&\\Policy};
+    \node[act] at (-3,2.35) {Threat\\Modeling\\[3pt]Designing\\Controls};
+    \node[act] at (-1,2.35) {\textbf{Source Code\\Auditing}\\[3pt]SW Component\\Analysis\\[3pt]\textbf{Vulnerability\\Scanning}};
+    \node[act] at (1,2.35)  {\textbf{Vulnerability\\Assessment}\\[3pt]\textbf{Penetration\\Testing}\\[3pt]Security\\Review};
+    \node[act] at (3,2.35)  {Security\\Audit};
+    \node[act] at (5,2.35)  {Continuous\\Pentesting\\[3pt]Red\\Teaming\\[3pt]Continuous\\Monitoring\\[3pt]Incident\\Response};
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  {\scriptsize\color{tumgrey} \textbf{SAST} fits the \emph{code} activities (Development); \textbf{DAST} and pen-testing fit the \emph{running} ones (Testing). Both shift security \emph{left}, long before a recall.}
+\end{frame}
+
+\begin{frame}{Two Ways to Find the Bug: SAST vs.\ DAST}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{SAST} -- read the code
+      \begin{itemize}
+        \item Inspect the source without running it.
+        \item A linter such as \texttt{clang-tidy} flags the unchecked \texttt{strcpy} in seconds (e.g.\ its \texttt{clang-analyzer} / \texttt{bugprone} checks).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{DAST} -- break the running thing
+      \begin{itemize}
+        \item Feed the live program a nasty, oversized input.
+        \item \alert{That's exactly what we just did.}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.3cm}
+  \begin{alertblock}{What our live demo was}
+    Our demo was DAST in miniature: a UDS-style diagnostic handler that copied attacker input into a fixed buffer with no length check. Input Validation and API Abuse, in a single line of C, caught by either approach.
+  \end{alertblock}
+  \vspace{0.5mm}
+  {\scriptsize\color{tumgrey} \texttt{clang-tidy} and static analysis are covered in depth in \textbf{Davide Cunial}'s lecture (12 November).}
 \end{frame}
 
 \begin{frame}{The Part That Never Stops: Vuln Management}

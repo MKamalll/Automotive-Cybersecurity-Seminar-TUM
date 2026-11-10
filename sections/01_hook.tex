@@ -27,14 +27,15 @@
 \end{frame}
 
 \begin{frame}{Where We're Going Today}
-  \textit{Six stops, one hour:}
-  \vspace{3mm}
-  \begin{enumerate}\setlength{\itemsep}{5pt}
+  \textit{Seven stops, one hour:}
+  \vspace{2.5mm}
+  \begin{enumerate}\setlength{\itemsep}{4pt}
     \item Why automotive security matters, with real incidents and numbers.
     \item Security fundamentals, re-told through a car.
     \item Inside the machine, and its attack surface.
+    \item From a bug to an exploit, why memory bugs become weapons.
     \item \alert{\textbf{Live demo}: turn a memory bug into control of an ECU.}
-    \item Defense in depth.
+    \item Defense in depth, the secure SDLC and SAST vs.\ DAST.
     \item The rules that make it mandatory, and where the jobs are.
   \end{enumerate}
 \end{frame}
@@ -45,14 +46,14 @@
   \centering
   \begin{tikzpicture}[font=\footnotesize]
     % ---------- how much code ----------
-    \node[inner sep=0] at (-5.0,2.75) {\includegraphics[height=1.0cm]{figures/car}};
-    \node at (-5.0,1.95){\scriptsize\textbf{100M+} lines \;\textbullet\; 70--150 ECUs};
-    \node[font=\Large] at (-3.3,2.75){$>$};
-    \node[inner sep=0] at (-1.95,2.8) {\includegraphics[height=1.0cm]{figures/jet}};
-    \node at (-1.95,1.95){\scriptsize jet \textbf{25M}};
-    \node[font=\Large] at (-0.4,2.75){$+$};
-    \node[inner sep=0] at (1.45,2.8) {\includegraphics[height=1.0cm]{figures/airliner}};
-    \node at (1.45,1.95){\scriptsize airliner \textbf{14M}};
+    \node[inner sep=0,draw=gray!40,line width=0.4pt] at (-5.0,2.75) {\includegraphics[height=1.2cm]{figures/car_photo}};
+    \node at (-5.0,1.9){\scriptsize\textbf{100M+} lines \;\textbullet\; 70--150 ECUs};
+    \node[font=\Large] at (-3.4,2.75){$>$};
+    \node[inner sep=0,draw=gray!40,line width=0.4pt] at (-1.9,2.75) {\includegraphics[height=1.2cm]{figures/jet_photo}};
+    \node at (-1.9,1.9){\scriptsize jet \textbf{25M}};
+    \node[font=\Large] at (-0.3,2.75){$+$};
+    \node[inner sep=0,draw=gray!40,line width=0.4pt] at (1.7,2.75) {\includegraphics[height=1.2cm]{figures/airliner_photo}};
+    \node at (1.7,1.9){\scriptsize airliner \textbf{14M}};
 
     % ---------- how connected ----------
     \node[font=\scriptsize] at (-5.35,0.75){\textbf{ECUs}};
@@ -62,15 +63,17 @@
     \draw[line width=1pt,tumblue] (-6.25,-0.05)--(-4.4,-0.05);
     \foreach \x in {-5.925,-5.325,-4.725}{\draw[line width=0.5pt] (\x,0.1)--(\x,-0.05);}
     \node[tumblue,font=\scriptsize] at (-5.3,-0.35){CAN bus};
-    \draw[-Stealth,line width=0.9pt] (-4.3,0.2)--(-2.6,0.2) node[midway,above,font=\scriptsize]{cellular};
+    \draw[-Stealth,line width=0.9pt] (-4.3,0.2)--(-2.6,0.2) node[midway,above,font=\scriptsize]{cellular (4G/5G)};
     \node[cloud,draw,fill=tumblue!12,aspect=2,minimum width=2.1cm,minimum height=1.2cm,line width=0.6pt] (cl) at (-1.4,0.2){\scriptsize Cloud};
-    \draw[-Stealth,line width=0.9pt] (-0.1,0.2)--(1.5,0.2) node[midway,above,font=\scriptsize]{Bluetooth};
+    \draw[-Stealth,line width=0.9pt] (-0.1,0.2)--(1.5,0.2) node[midway,above,font=\scriptsize]{internet / app};
     \begin{scope}[shift={(2.0,-0.45)},line width=0.6pt]
       \draw[fill=gray!15,rounded corners=3pt] (0,0) rectangle (0.62,1.15);
       \draw[fill=white] (0.09,0.16) rectangle (0.53,0.98);
       \fill (0.31,0.08) circle(0.025);
     \end{scope}
-    \node[font=\scriptsize] at (2.3,-0.78){phone / app};
+    \node[font=\scriptsize] at (2.3,-0.72){phone / app};
+    \draw[-Stealth,dashed,tumdark,line width=0.8pt] (1.95,-0.5) to[out=-140,in=-40] (-4.35,-0.25);
+    \node[tumdark,font=\scriptsize] at (-1.2,-1.12){Bluetooth / Wi-Fi (proximity)};
   \end{tikzpicture}
 
   \vspace{1mm}
@@ -96,23 +99,23 @@
   \textbf{2016 \textbullet\ Tesla Model S, from kilometres away.} Tencent's Keen Security Lab chained the car's web browser into the CAN bus and hit the brakes of a \emph{moving} Model S remotely. Tesla pushed an over-the-air fix within ten days. {\scriptsize(\href{https://keenlab.tencent.com/en/2016/09/19/Keen-Security-Lab-of-Tencent-Car-Hacking-Research-Remote-Attack-to-Tesla-Cars/}{keenlab.tencent.com})}
 
   \vspace{1.2mm}
-  \textbf{2022 \textbullet\ Kia \& Hyundai, the ``Kia Boys''.} Certain \textbf{US-market} Kia/Hyundai models (roughly 9 million, 2011--2022) shipped \textbf{without an engine immobilizer}. That design gap is separate from the theft \emph{method}: thieves forced the ignition and started the car with a USB-A plug, spread as the viral TikTok ``Kia Challenge''. {\scriptsize(\href{https://hbsslaw.com/press/hyundai-kia-car-theft-defect/hyundai-kia-theft-class-action-lawsuit-reaches-settlement-valued-at-more-than-200-million}{hbsslaw.com})}
+  \textbf{2026 \textbullet\ Any car from one brand, by its plate.} Shubham Shah turned a leaked admin credential and a web-firewall bypass in a carmaker's connected-car backend into remote unlock, horn and engine-start commands for any of the brand's vehicles, keyed on nothing but a license plate. The same chain exposed owners' personal data and allowed full account takeover. {\scriptsize(\href{https://shubs.io/unlocking-any-car-from-x-brand-in-most-of-the-world/}{shubs.io})}
 
   \vspace{1.2mm}
-  \textbf{2024 \textbullet\ Any Kia, from a number plate.} Researchers abused Kia's dealer portal to control almost any Kia built after 2013 in about \alert{30 seconds}, using only its license plate: unlock, start, locate, and pull the owner's personal details. {\scriptsize(\href{https://samcurry.net/hacking-kia}{samcurry.net/hacking-kia})}
+  \textbf{2026 \textbullet\ Two automakers, through their login servers.} Shah and Sam Curry chained a ForgeRock path-confusion bug into a hidden admin console still set to \texttt{admin}/\texttt{admin}, giving them code execution on two carmakers' production identity servers. From there they hijacked customer accounts and, on US vehicles, could locate, unlock and remote-start the car, even muting the owner's phone alerts. {\scriptsize(\href{https://samcurry.net/forgerock}{samcurry.net/forgerock})}
 \end{frame}
 
 \begin{frame}{The Consequences: a Bug Is Now a Recall}
   \small
   \setlength{\itemsep}{2pt}
   \begin{itemize}\setlength{\itemsep}{2pt}
-    \item \textbf{Jeep (2015)}: \textbf{1.4 million} vehicles recalled, the industry's \emph{first} cybersecurity recall. A software flaw became a physical, logistical one.
-    \item \textbf{Kia \& Hyundai}: \textbf{$\sim$9 million} cars exposed, a \textbf{\$200M} class-action settlement (up to \$145M to owners), free immobilizer software retrofits, and some US insurers refusing to cover the affected models.
-    \item \textbf{Tesla (2016)}: fixed across the whole fleet by an \textbf{over-the-air update in 10 days}, the modern alternative to a recall, when you've engineered for it.
+    \item \textbf{Jeep (2015)}: \textbf{1.4 million} vehicles recalled, the industry's \emph{first} cybersecurity recall --- a software flaw became a physical, logistical one.
+    \item \textbf{Kia \& Hyundai}: \textbf{$\sim$9 million} cars exposed, a \textbf{\$200M} class-action settlement, free immobilizer retrofits, and some US insurers refusing to cover the affected models.
+    \item \textbf{Tesla (2016)}: patched across the whole fleet by an \textbf{over-the-air update in 10 days}, the modern alternative to a recall when you've engineered for it.
     \item \textbf{Dealerships (CDK, 2024)}: ransomware on one software vendor froze \textbf{$\sim$15,000} dealerships for weeks, an estimated \textbf{\$1 billion} in losses.
   \end{itemize}
   \begin{alertblock}{The throughline}
-    In a car, a vulnerability isn't just a CVE. It's recalls, class actions, insurers walking away, and brand damage.
+    Beyond recalls, lawsuits and insurers walking away, the consequence that outlasts them all is \textbf{reputation}: customer trust and brand value take years to build and one public breach to dent.
   \end{alertblock}
   {\scriptsize\color{tumgrey} Sources: Jeep recall, Chrysler/NHTSA (2015); Hyundai--Kia settlement, \href{https://hbsslaw.com/press/hyundai-kia-car-theft-defect/hyundai-kia-theft-class-action-lawsuit-reaches-settlement-valued-at-more-than-200-million}{Hagens Berman (2023)}; Tesla OTA fix, \href{https://keenlab.tencent.com/en/2016/09/19/Keen-Security-Lab-of-Tencent-Car-Hacking-Research-Remote-Attack-to-Tesla-Cars/}{Keen Security Lab (2016)}; CDK losses, \href{https://www.foxbusiness.com/markets/car-dealership-losses-from-cdk-software-outage-could-reach-1-billion-study-finds}{Anderson Economic Group (2024)}.}
 \end{frame}

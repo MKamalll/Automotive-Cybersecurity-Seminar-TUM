@@ -29,24 +29,3 @@
 
   {\scriptsize The gateway is the \textbf{drawbridge}: it separates the safety-critical buses (top) from the parts an attacker can reach (bottom). Domains are now consolidating onto a few powerful ``vehicle computers'', so one bug reaches further.}
 \end{frame}
-
-\begin{frame}{The Two Scariest Letters: ADAS and OTA}
-  \begin{columns}[T]
-    \begin{column}{0.5\textwidth}
-      \textbf{ADAS} -- the car that steers itself
-      \begin{itemize}
-        \item Cameras, radar and LiDAR feed perception and planning software.
-        \item Runs on powerful SoCs; the safety-critical path often uses a real-time OS such as QNX (platforms vary).
-        \item It \emph{actuates} steering and braking, so a bug here is a physical event.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \textbf{OTA} -- patching from orbit
-      \begin{itemize}
-        \item Fix bugs across the fleet overnight, a huge win.
-        \item Also the ultimate target: forge one update, own \emph{every} car.
-        \item Held together by signing, secure boot, and hardened update servers.
-      \end{itemize}
-    \end{column}
-  \end{columns}
-\end{frame}

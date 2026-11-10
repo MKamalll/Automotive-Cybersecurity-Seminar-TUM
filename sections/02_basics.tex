@@ -1,19 +1,7 @@
 % Security basics (reuse tutorial slides), mapped to automotive
 \xchapter{Security, in a Car}
 
-\begin{frame}{The CIA Triad, Behind the Wheel}
-  \begin{itemize}
-    \item \textbf{Confidentiality} -- your location, driving habits and cabin camera stay private.
-    \item \textbf{Integrity} -- a message that says ``I'm the brake ECU'' had better \emph{be} the brake ECU.
-    \item \textbf{Availability} -- the airbag controller answers in milliseconds, every time. A DoS on a safety bus \emph{is} a safety incident.
-  \end{itemize}
-  \vspace{1mm}
-  \begin{block}{And for cars, CIA isn't enough}
-    Who authorised this OTA update? Can a supplier deny shipping bad firmware? Is this the real key, or a relay box in the bushes?
-  \end{block}
-\end{frame}
-
-\begin{frame}{Safety vs.\ Security: the One Slide That Matters}
+\begin{frame}{Safety vs.\ Security: Two Different Enemies}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \textbf{Safety} \;(ISO 26262)

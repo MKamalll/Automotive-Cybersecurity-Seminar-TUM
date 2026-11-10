@@ -1,24 +1,44 @@
-# TUM guest lecture: Cyber Security in Automotive
+# Securing the Software-Defined Vehicle — TUM Guest Lecture
 
-45-minute lecture (+ Q&A) for informatics and mechanical-engineering
-students, intro tutorial (basic security concepts, AppSec, SAST/DAST, 7PK taxonomy).
+A ~45-minute guest lecture (+ Q&A) on **automotive cybersecurity** for a
+mixed audience of informatics and mechanical-engineering students, built
+around a **live stack buffer-overflow exploit** on a toy ECU diagnostic
+handler.
 
-Build: `latexmk -pdf main.tex` (needs `pgfplots` for the CVE chart).
-Sections live in `sections/`, shared styling in `preamble.tex`.
+**Title:** *Securing the Software-Defined Vehicle — From Attack Surface to
+Exploit to Defense*
 
-## Structure (9 sections, ~49 slides incl. section dividers)
-1. Hook — a car is a computer on wheels (Jeep Cherokee, Tesla, 2022 API hack)
-2. Security basics, mapped onto a vehicle; safety vs. security
-3. Vehicle architecture — ECUs, CAN, gateway, ADAS, OTA
-4. Attack surface — entry points, fob relay, 2022 web-API case, CVE/KEV chart by vendor
-5. Regulation — UN R155/R156, ISO/SAE 21434, TARA
-6. From bugs to exploits — 7PK condensed, SAST vs DAST, the stack
-7. **Live demo** — stack buffer overflow in a toy diagnostic handler (see `demo/`)
-8. Defense in depth — mitigations, SBOM/vulnerability management
-9. Takeaways, careers, Q&A
+## Build
+
+```bash
+latexmk -pdf Automotive-Security-MKAbozeid.tex
+# or run pdflatex twice (second pass fills in the running chapter headers):
+pdflatex Automotive-Security-MKAbozeid.tex && pdflatex Automotive-Security-MKAbozeid.tex
+```
+
+Output: **`Automotive-Security-MKAbozeid.pdf`**. Sources are split across
+`sections/`, shared styling is in `preamble.tex`, and all imagery is in
+`figures/`.
+
+## Flow (seven parts, ~37 slides)
+
+1. **Why it matters** — a car is a computer on wheels; four real incidents; the consequences (recalls, settlements, reputation); the 2025 numbers.
+2. **Security, in a car** — safety vs. security: two different enemies.
+3. **Inside the vehicle** — ECUs, CAN, the gateway as a drawbridge; the attack surface.
+4. **From bugs to exploits** — the 7PK taxonomy, why cars still run on C, the stack.
+5. **Live demo** — a stack buffer overflow turned into control of an ECU (see `demo/`).
+6. **Defense in depth** — layered defenses, the secure SDLC, SAST vs. DAST, vulnerability management.
+7. **Rules & process + takeaways** — ISO/SAE 21434, UN R155/R156, TARA; then careers and Q&A.
 
 ## Live demo
-See `demo/README.md` for the full walkthrough script. The demo itself
-(`demo/diag_handler.c`, `demo/launcher.c`) is built and verified
-separately — run `make` inside `demo/` before the talk and rehearse
-it once.
+
+Everything for the demo lives in `demo/`: the vulnerable C program, the
+build and exploit scripts, a one-shot setup script, and
+**`demo/gdb-cheatsheet.md`** (handy gdb commands for finding `unlock_ecu`,
+proving the 16-byte offset, and watching the overwrite live).
+
+The demo targets **x86-64 Linux** and relies on
+`-fno-stack-protector -no-pie`. The overflow only ever redirects execution
+to a benign in-binary `unlock_ecu()` routine (a printed "access granted"
+banner) — it does **not** spawn a shell or inject code. Build and rehearse
+it once before the talk.

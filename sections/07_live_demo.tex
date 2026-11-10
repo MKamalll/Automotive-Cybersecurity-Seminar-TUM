@@ -9,27 +9,6 @@
   \vfill
 \end{frame}
 
-\begin{frame}{How a Hacker Reaches the Brakes}
-  \centering
-  \begin{tikzpicture}[font=\footnotesize, node distance=5mm,
-     box/.style={draw,rounded corners,minimum height=1.05cm,minimum width=1.9cm,align=center},
-     arr/.style={-Stealth,very thick,tumblue}]
-    \node[cloud,draw,fill=gray!12,aspect=2,align=center,minimum width=1.9cm,minimum height=1.1cm] (net) {attacker\\(internet)};
-    \node[box,fill=alertred!18,draw=alertred,very thick,right=of net] (info) {Infotainment\\ECU};
-    \node[box,fill=tumblue!12,right=of info] (gw) {Gateway};
-    \node[box,fill=tumblue!12,right=of gw] (can) {CAN bus\\+ ECUs};
-    \node[box,fill=alertred!30,right=of can] (act) {Brakes /\\Steering};
-    \draw[arr] (net)--(info); \draw[arr] (info)--(gw); \draw[arr] (gw)--(can); \draw[arr] (can)--(act);
-    \node[alertred,align=center,font=\scriptsize] (lbl) at ($(info)+(0,-1.4)$) {today's live demo\\lives here};
-    \draw[-Stealth,alertred,thick] (lbl)--(info);
-  \end{tikzpicture}
-  \vspace{4mm}
-  \begin{itemize}
-    \item A remote bug gets you into \emph{one} internet-facing ECU. The real prize is \textbf{past the gateway}, onto the CAN bus, where the brakes and steering listen.
-    \item The Jeep did the whole chain. In a minute we'll do the first box: \textbf{turn a memory bug into control of an ECU.}
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{Live Demo: Setup}
   \begin{itemize}
     \item \textbf{Target}: a toy ECU diagnostic service. \texttt{handle\_diagnostic\_request()} copies an incoming payload into an 8-byte stack buffer; \texttt{unlock\_ecu()} is a privileged routine the program never calls.
@@ -51,7 +30,7 @@ void handle_diagnostic_request(char *payload) {
   \end{lstlisting}
   \begin{itemize}
     \item \texttt{buf} is 8 bytes. \texttt{payload} comes straight from the diagnostic request, fully attacker-controlled.
-    \item \texttt{strcpy} copies until it hits a \texttt{NUL} byte, however far past the end of \texttt{buf} that is. A SAST tool would flag this instantly.
+    \item \texttt{strcpy} copies until it hits a \texttt{NUL} byte, however far past the end of \texttt{buf} that is. A static-analysis tool would flag this instantly.
   \end{itemize}
 \end{frame}
 
@@ -132,6 +111,27 @@ Segmentation fault
   \begin{itemize}
     \item On a real ECU, \texttt{unlock\_ecu()} stands in for a privileged routine, a calibration function or a debug backdoor, that should sit behind an authentication check this bug walks straight past.
     \item This is exactly why Input Validation sits at the top of the 7PK taxonomy, and why memory-safe languages like Rust and hardware mitigations (stack canaries, ASLR, NX/DEP, Pointer Authentication) exist. More on that next.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{How a Hacker Reaches the Brakes}
+  \centering
+  \begin{tikzpicture}[font=\footnotesize, node distance=5mm,
+     box/.style={draw,rounded corners,minimum height=1.05cm,minimum width=1.9cm,align=center},
+     arr/.style={-Stealth,very thick,tumblue}]
+    \node[cloud,draw,fill=gray!12,aspect=2,align=center,minimum width=1.9cm,minimum height=1.1cm] (net) {attacker\\(internet)};
+    \node[box,fill=alertred!18,draw=alertred,very thick,right=of net] (info) {Infotainment\\ECU};
+    \node[box,fill=tumblue!12,right=of info] (gw) {Gateway};
+    \node[box,fill=tumblue!12,right=of gw] (can) {CAN bus\\+ ECUs};
+    \node[box,fill=alertred!30,right=of can] (act) {Brakes /\\Steering};
+    \draw[arr] (net)--(info); \draw[arr] (info)--(gw); \draw[arr] (gw)--(can); \draw[arr] (can)--(act);
+    \node[alertred,align=center,font=\scriptsize] (lbl) at ($(info)+(0,-1.4)$) {our demo\\was this box};
+    \draw[-Stealth,alertred,thick] (lbl)--(info);
+  \end{tikzpicture}
+  \vspace{4mm}
+  \begin{itemize}
+    \item Our demo was just that first box: a memory bug turned into control of \emph{one} internet-facing ECU. The real prize is \textbf{past the gateway}, onto the CAN bus, where the brakes and steering listen.
+    \item A real attack keeps going, box by box. The 2015 Jeep hack did the \textbf{whole chain} end to end, from a cellular connection to the brakes.
   \end{itemize}
 \end{frame}
 
