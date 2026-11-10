@@ -27,8 +27,8 @@
   \end{tikzpicture}
 
   \vspace{4mm}
-  \begin{block}{Worked example}
-    \textbf{Asset}: brake ECU firmware integrity. \textbf{Threat}: forged CAN frames via an infotainment pivot. \textbf{Feasibility}: medium (needs several bugs chained). \textbf{Impact}: severe (safety). \textbf{Treatment}: gateway filtering + message authentication, mandatory.
+  \begin{block}{Worked example: a software update}
+    \textbf{Asset}: integrity of an ECU's software update (the firmware image it installs). \textbf{Threat}: the ECU accepts and installs an \emph{unauthenticated or tampered} image. \textbf{Feasibility}: high if images aren't signed, there's nothing to forge. \textbf{Impact}: severe, control the firmware and you control the ECU, and over OTA potentially the whole fleet. \textbf{Treatment}: signed images + secure boot (only signed code runs), anti-rollback (secure version numbers), and message authentication (MAC) on the update channel.
   \end{block}
   \vspace{1mm}
   {\footnotesize \textbf{On your desk}: every feature ships with a TARA and verification evidence before sign-off, plus continuous vulnerability management with defined remediation timelines. Security lives in requirements and supplier contracts from day one, not a pen-test bolted on at the end.}

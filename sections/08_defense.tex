@@ -1,21 +1,38 @@
 % Layered defense, secure boot, MAC, SBOM
 \xchapter{Defense in Depth}
 
-\begin{frame}{Defense in Depth: Layers, Not a Silver Bullet}
-  \begin{itemize}
-    \item The demo broke \emph{one} layer. Real systems stack them so no single failure is fatal.
-    \item \textbf{Code} -- safe string functions, input validation, Rust for new components.
-    \item \textbf{Compiler / OS} -- stack canaries, ASLR, NX/DEP, Control-Flow Integrity (the very things our demo switched off).
-    \item \textbf{OS security} -- Mandatory Access Control, sandboxing, secure boot (QNX, Linux).
-    \item \textbf{Network} -- gateway segmentation, CAN authentication (SecOC), isolating safety zones.
-    \item \textbf{Process} -- the ISO/SAE 21434 lifecycle and continuous vulnerability management.
-  \end{itemize}
+\begin{frame}{Defense in Depth: No Single Wall}
+  \centering
+  \begin{tikzpicture}[font=\scriptsize]
+    \def\cx{-2.8}
+    % rings, outer -> inner
+    \filldraw[fill=tumblue!8,  draw=tumblue!45] (\cx,0) circle(3.40);
+    \filldraw[fill=tumblue!16, draw=tumblue!55] (\cx,0) circle(2.72);
+    \filldraw[fill=tumblue!26, draw=tumblue!65] (\cx,0) circle(2.04);
+    \filldraw[fill=tumblue!40, draw=tumblue!75] (\cx,0) circle(1.36);
+    \filldraw[fill=alertred!35, draw=alertred, very thick] (\cx,0) circle(0.80);
+    \node[align=center,font=\scriptsize\bfseries] at (\cx,0) {Safety\\ECU};
+    \node[font=\scriptsize\bfseries] at (\cx,1.06) {Code};
+    \node[font=\scriptsize\bfseries] at (\cx,1.70) {Compiler / OS};
+    \node[font=\scriptsize\bfseries] at (\cx,2.38) {OS security};
+    \node[font=\scriptsize\bfseries] at (\cx,3.06) {Network};
+    \node[align=center,font=\scriptsize,alertred] (atk) at (\cx-3.7,2.7) {remote\\attacker};
+    \draw[-Stealth,alertred,very thick] (atk) .. controls (\cx-2.2,2.1) and (\cx-1.4,1.1) .. (\cx-0.5,0.4);
+    % legend
+    \def\lx{1.5}
+    \node[anchor=west] at (\lx,3.0) {\textbf{Network} \,-- gateway, CAN auth (SecOC)};
+    \node[anchor=west] at (\lx,2.2) {\textbf{OS} \,-- secure boot, MAC, sandbox};
+    \node[anchor=west] at (\lx,1.4) {\textbf{Compiler/OS} \,-- canary, ASLR, NX, CFI};
+    \node[anchor=west] at (\lx,0.6) {\textbf{Code} \,-- bounds checks, Rust};
+    \node[anchor=west] at (\lx,-0.2) {\textbf{Process} \,-- ISO/SAE 21434, vuln mgmt};
+    \node[anchor=west,align=left,alertred] at (\lx,-1.2) {\textbf{Our demo} beat only the inner ring.\\Any outer layer would have stopped it.};
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Which Layer Would Have Stopped \emph{Our} Demo?}
   \begin{itemize}
     \item \textbf{Stack canary} -- a secret value just before the return address. Our overflow smashes it, so the program aborts \emph{before} the hijack.
-    \item \textbf{ASLR / PIE} -- shuffles addresses every run, so we could never have hardcoded where \texttt{win()} lives.
+    \item \textbf{ASLR / PIE} -- shuffles addresses every run, so we could never have hardcoded where \texttt{unlock\_ecu()} lives.
     \item \textbf{NX / DEP} -- blocks jumping into injected shellcode (we jumped to existing code instead, which is exactly why return-oriented techniques exist).
     \item \textbf{Bounds-checked copy} (\texttt{strlcpy}, or just checking the length) -- kills the bug at the source. \alert{Cheapest, most reliable fix of all.}
   \end{itemize}

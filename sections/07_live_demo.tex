@@ -9,7 +9,7 @@
   \vfill
 \end{frame}
 
-\begin{frame}{From One Bug to a Moving Car}
+\begin{frame}{How a Hacker Reaches the Brakes}
   \centering
   \begin{tikzpicture}[font=\footnotesize, node distance=5mm,
      box/.style={draw,rounded corners,minimum height=1.05cm,minimum width=1.9cm,align=center},
@@ -41,8 +41,8 @@
 
 \begin{frame}[fragile]{Step 1: The Vulnerable Code}
   \begin{lstlisting}[language=C]
-void unlock_ecu(void) {              // never called by the program
-    write(1, "ECU UNLOCKED\n", 13);  // privileged routine
+void unlock_ecu(void) {                       // never called by the program
+    write(1, "SECURITY ACCESS GRANTED\n", 24); // privileged routine
 }
 void handle_diagnostic_request(char *payload) {
     char buf[8];
@@ -112,14 +112,15 @@ $ ./vuln $(python3 -c 'import sys;
 \begin{frame}[fragile]{Step 5: Watch It Run}
 \begin{lstlisting}[language=bash]
 $ ./exploit.sh
-unlock_ecu() = 0x401196 , offset to return address = 16 bytes
+unlock_ecu() = 0x401196 , offset = 16 bytes
 
-[ECU UNLOCKED] unlock_ecu() reached via the overflow...
+  >> [ECU] SECURITY ACCESS GRANTED  (no key was checked)
+  >> Immobilizer: OFF  Doors: UNLOCKED  Engine start: ENABLED
 
 Segmentation fault
 \end{lstlisting}
   \begin{itemize}
-    \item The \texttt{[ECU UNLOCKED]} banner is the proof: \texttt{unlock\_ecu()} ran because we overwrote the return address, not because any code called it.
+    \item That banner is the proof: \texttt{unlock\_ecu()} ran, the car ``granted access'' with no key, because we overwrote the return address, not because any code called it.
     \item The crash right after is expected: we jumped into \texttt{unlock\_ecu()} but never set up a clean way for it to return. The banner printed \emph{first} -- that's what matters.
   \end{itemize}
 \end{frame}

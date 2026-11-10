@@ -13,8 +13,12 @@
  * printf() can crash on that. write() has no such assumption. */
 void unlock_ecu(void) {
     const char msg[] =
-        "\n[ECU UNLOCKED] unlock_ecu() reached via the overflow -- a routine that\n"
-        "should sit behind seed-key authentication just ran, unauthenticated.\n\n";
+        "\n"
+        "  >> [ECU] SECURITY ACCESS GRANTED  (no key was ever checked)\n"
+        "  >> Immobilizer: OFF    Doors: UNLOCKED    Engine start: ENABLED\n"
+        "\n"
+        "  unlock_ecu() ran via the overflow -- on a real ECU this routine\n"
+        "  should sit behind UDS seed-key authentication.\n\n";
     write(1, msg, sizeof(msg) - 1);
 }
 

@@ -55,8 +55,11 @@ Expected tail of `./exploit.sh`:
 ```
 unlock_ecu() = 0x401196 , offset to return address = 16 bytes
 
-[ECU UNLOCKED] unlock_ecu() reached via the overflow -- a routine that
-should sit behind seed-key authentication just ran, unauthenticated.
+  >> [ECU] SECURITY ACCESS GRANTED  (no key was ever checked)
+  >> Immobilizer: OFF    Doors: UNLOCKED    Engine start: ENABLED
+
+  unlock_ecu() ran via the overflow -- on a real ECU this routine
+  should sit behind UDS seed-key authentication.
 
 Segmentation fault
 ```
@@ -82,7 +85,7 @@ banner printing first is the proof the hijack worked.)
    buffer + 8 for the saved RBP) and prints the value it used.
 5. **Aim the overflow.** Instead of random 'A's in the return-address
    slot, put the address of `unlock_ecu()` there. `./exploit.sh` does
-   exactly this and the `[ECU UNLOCKED]` banner proves the redirect.
+   exactly this and the `SECURITY ACCESS GRANTED` banner proves the redirect.
 6. **Tie it back.** On a real ECU, `unlock_ecu()` is a privileged routine
    that should sit behind an authentication check - one this bug walks
    straight past.
